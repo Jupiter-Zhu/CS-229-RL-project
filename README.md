@@ -16,7 +16,7 @@ We have a base line policy gradient model that has the following structure:
 
 Here's its result from episode 200, 500 and 1000.
 
-![Alt text](image/episode 200.gif?raw=true "episode 200") 
-![Alt text](image/episode 500.gif?raw=true "episode 500") 
-![Alt text](image/episode 1000.gif?raw=true "episode 1000")
+![Alt text](image/episode-200.gif?raw=true "episode 200") 
+![Alt text](image/episode-500.gif?raw=true "episode 500") 
+![Alt text](image/episode-1000.gif?raw=true "episode 1000")
 
