@@ -20,7 +20,7 @@ Here's its result from episode 200, 500 and 1000.
 ![Alt text](image/episode-500.gif?raw=true "episode 500") 
 ![Alt text](image/episode-1000.gif?raw=true "episode 1000")
 
-As one can see the model performs reasonably well after episode 500. But for some reason it learns to only fly off the frame after episode 1000. Currently we are tring to implement different fixes to solve such problems. One option would be starting the lander at randomized positions. Another option we have exploered is using deep Q-learning network. For some reason the agent under our deep Q-learning frame work is learning the game very slowly. We are planned to do more research on debugging on this model. More details could be seen in the code and our milestone report.
+As one can see the model performs reasonably well after episode 500. But for some reason it learns to only fly off the frame after episode 1000. Currently we are tring to implement different fixes to solve such problems. One option would be starting the lander at randomized positions. Another option we have exploered is using deep Q-learning network with experience replay. For some reason the agent under our deep Q-learning frame work is learning the game very slowly. We are planned to do more research on debugging on this model. More details could be seen in the code and our milestone report.
 
 ## Installation
 
