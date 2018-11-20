@@ -68,7 +68,7 @@ for episode in range(EPISODES):
             # Render env if we get to rewards minimum
             if max_reward_so_far > RENDER_REWARD_MIN: RENDER_ENV = True
 
-            if episode > EPISODES-100: RENDER_ENV = True
+             
 
             break
 

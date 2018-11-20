@@ -198,6 +198,7 @@ class PolicyGradient:
 ##########################################################################################################
 
 
+###with experience replay sampling form the past 1000 frames.
 
 class DeepQNetwork:
     def __init__(
