@@ -20,3 +20,11 @@ Here's its result from episode 200, 500 and 1000.
 ![Alt text](image/episode-500.gif?raw=true "episode 500") 
 ![Alt text](image/episode-1000.gif?raw=true "episode 1000")
 
+As one can see the model performs reasonably well after episode 500. But for some reason it learns to only fly off the frame after episode 1000. Currently we are tring to implement different fixes to solve such problems. One option would be starting the lander at randomized positions. Another option we have exploered is using deep Q-learning network. More details could be seen in the code.
+
+## Installation
+
+1. Create a conda enviroment.
+2. Install the requirements.txt
+3. Git clone open ai gym.
+4. Cd to the gym folder and install box2d enviroments.
