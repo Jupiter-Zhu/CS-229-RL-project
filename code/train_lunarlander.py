@@ -17,7 +17,7 @@ print("env.observation_space.low", env.observation_space.low)
 
 
 RENDER_ENV = False
-EPISODES = 5000
+EPISODES = 500
 rewards = []
 RENDER_REWARD_MIN = 500
 
@@ -29,10 +29,10 @@ if __name__ == "__main__":
     load_path = "output/weights/LunarLander/{}/LunarLander-v2.ckpt".format(load_version)
     save_path = "output/weights/LunarLander/{}/LunarLander-v2.ckpt".format(save_version)
 
-    PG = PolicyGradient(
+    Model = PolicyGradient(
         n_x = env.observation_space.shape[0],
         n_y = env.action_space.n,
-        learning_rate=0.02,
+        learning_rate=0.01,
         reward_decay=0.99,
         #load_path=load_path,
         load_path=None,
@@ -44,6 +44,7 @@ if __name__ == "__main__":
     for episode in range(EPISODES):
 
         observation = env.reset()
+        
         episode_reward = 0
 
         tic = time.clock()
@@ -52,25 +53,25 @@ if __name__ == "__main__":
             if RENDER_ENV: env.render()
 
             # 1. Choose an action based on observation
-            action = PG.choose_action(observation)
+            action = Model.choose_action(observation)
 
             # 2. Take action in the environment
             observation_, reward, done, info = env.step(action)
 
-            # 4. Store transition for training
-            PG.store_transition(observation, action, reward)
+            # 3. Store transition for training
+            Model.store_transition(observation, action, reward)
 
             toc = time.clock()
             elapsed_sec = toc - tic
             if elapsed_sec > 120:
                 done = True
 
-            episode_rewards_sum = sum(PG.episode_rewards)
+            episode_rewards_sum = sum(Model.episode_rewards)
             if episode_rewards_sum < -250:
                 done = True
 
             if done:
-                episode_rewards_sum = sum(PG.episode_rewards)
+                episode_rewards_sum = sum(Model.episode_rewards)
                 rewards.append(episode_rewards_sum)
                 max_reward_so_far = np.amax(rewards)
 
@@ -81,7 +82,7 @@ if __name__ == "__main__":
                 print("Max reward so far: ", max_reward_so_far)
 
                 # 5. Train neural network
-                discounted_episode_rewards_norm = PG.learn()
+                discounted_episode_rewards_norm = Model.learn()
 
                 if max_reward_so_far > RENDER_REWARD_MIN: RENDER_ENV = True
 
@@ -90,4 +91,5 @@ if __name__ == "__main__":
 
             # Save new observation
             observation = observation_
+    #Model.plot_cost()
 		
