@@ -53,6 +53,6 @@ for label_day in range(5, len(c) - 5, 5):
 
 data = {'Data': c, 'Scores': scores, 'Labels': labels}
 df = pd.DataFrame(data)
-df.to_csv("stock_data.csv")
+df.to_csv("./data/stock_data_apple.csv")
 
    
