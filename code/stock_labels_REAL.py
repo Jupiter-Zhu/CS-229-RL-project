@@ -15,10 +15,10 @@ panel_data = data.DataReader('AAPL', 'iex', start_date, end_date)
 c=np.array(panel_data['close'])
 
 # scores
-scores = np.empty(len(c))
+scores = np.full(len(c), None)
 
 # labels
-labels = np.empty(len(c))
+labels = np.full(len(c), 10)
 
 for label_day in range(5, len(c) - 5, 5):
 	# normalized standard deviation
@@ -50,8 +50,6 @@ for label_day in range(5, len(c) - 5, 5):
 
 	# assigning label
 	labels[label_day] = label
-
-print(scores)
 
 data = {'Data': c, 'Scores': scores, 'Labels': labels}
 df = pd.DataFrame(data)
