@@ -7,23 +7,30 @@ import time
 
 class StockAgent:
     def __init__(
-        self,
-        n_x,
-        n_y,
-        data,
+        self,       
+        input_data,
+        action_number=5,
+        labels,
         learning_rate=0.01,
         test_week_num=10,
         look_back_num=3                    
     ):
 
-        self.n_x = n_x
-        self.n_y = n_y
+        
         self.lr = learning_rate 
         self.lbn = look_back_num
+        self.action_number=action_number
 
-        self.train_data=data[0:-test_week_num*5,:]
+        self.train_data=input_data[0:-test_week_num*5]
 
-        self.test_data=data[-test_week_num*5:,:]
+        self.test_data=input_data[-test_week_num*5:]
+
+        self.train_label=labels[0:-test_week_num*5]
+
+        self.test_label=labels[-test_week_num*5:]
+
+        self.num_examples_weeks=len(train_data)//5
+        
         
 
         
@@ -42,7 +49,11 @@ class StockAgent:
         self.sess.run(tf.global_variables_initializer())
 
 
-    def generate_labels(self,data):
+    def generate_labels_as_onehot(self,label_n2_p2):
+        N=np.eye(5)
+        return N[label_n_2_p2+2,:]
+
+
         
 
         
@@ -51,72 +62,81 @@ class StockAgent:
 
      
 
-    def choose_action(self, observation):
+    def choose_action(self, input_data):
      
 
         # Run forward propagation to get softmax probabilities
-        prob_weights = self.sess.run(self.outputs_softmax, feed_dict = {self.X: observation})
+        prob_weights = self.sess.run(self.outputs_softmax, feed_dict = {self.X: input_data})
 
         # Select action using a biased sample
         # this will return the index of the action we've sampled
         action = np.random.choice(range(len(prob_weights.ravel())), p=prob_weights.ravel())
         return action
 
-    def learn(self):
-        # Discount and normalize episode reward
-        discounted_episode_rewards_norm = self.discount_and_norm_rewards()
+    def learn(self, num_epochs):
+        # # Discount and normalize episode reward
+        # discounted_episode_rewards_norm = self.discount_and_norm_rewards()
 
-        # Train on episode
-        self.sess.run(self.train_op,  feed_dict={
-             self.X: np.vstack(self.episode_observations).T,
-             self.Y: np.vstack(np.array(self.episode_actions)).T,
-             self.discounted_episode_rewards_norm: discounted_episode_rewards_norm,
-        })
+        # # Train on episode
+        # self.sess.run(self.train_op,  feed_dict={
+        #      self.X: np.vstack(self.episode_observations).T,
+        #      self.Y: np.vstack(np.array(self.episode_actions)).T,
+        #      self.discounted_episode_rewards_norm: discounted_episode_rewards_norm,
+        # })
 
-        # silly way of implementing tensorboard.. very slow
-        #loss_summary = self.sess.run(self.loss_summary,  feed_dict={
-        #     self.X: np.vstack(self.episode_observations).T,
-        #     self.Y: np.vstack(np.array(self.episode_actions)).T,
-        #     self.discounted_episode_rewards_norm: discounted_episode_rewards_norm,
-        #})
+        # # silly way of implementing tensorboard.. very slow
+        # #loss_summary = self.sess.run(self.loss_summary,  feed_dict={
+        # #     self.X: np.vstack(self.episode_observations).T,
+        # #     self.Y: np.vstack(np.array(self.episode_actions)).T,
+        # #     self.discounted_episode_rewards_norm: discounted_episode_rewards_norm,
+        # #})
 
-        #tf.summary.FileWriter("logs/").add_summary(loss_summary)
+        # #tf.summary.FileWriter("logs/").add_summary(loss_summary)
+        for epoch in range(num_epochs):
+            for last_week_num in range(self.lbn, self.num_examples_weeks):
+                past_three_week = self.train_data[(last_week_num-self.lbn) * 5 : last_week_num * 5 ]
+                label_one_hot = self.generate_labels_as_onehot(self.train_label[last_week_num + 1])
+                profit = self.profit(last_week_num)
+
+            # Train on episode
+                self.sess.run(self.train_op,  feed_dict={
+                    self.X: past_three_week,
+                    self.Y: label_one_hot,
+                    self.Profit: profit,
+                })
 
         
 
-        return discounted_episode_rewards_norm
-
-    def profit(self,current_week_num):
-        discounted_episode_rewards = np.zeros_like(self.episode_rewards)
-        cumulative = 0
-        for t in reversed(range(len(self.episode_rewards))):
-            cumulative = cumulative * self.gamma + self.episode_rewards[t]
-            discounted_episode_rewards[t] = cumulative
-
-        discounted_episode_rewards -= np.mean(discounted_episode_rewards)
-        discounted_episode_rewards /= np.std(discounted_episode_rewards)
         
-        return discounted_episode_rewards
+    def profit(self,last_week_num):
+        past_three_week = self.train_data[(last_week_num-self.lbn) * 5 : last_week_num * 5 ]
+        action = self.choose_action(input_data=past_three_week)
+        weight=np.array([-100,-10,0,10,100])
+        transcation_amount=action.dot(weight)  
+        delta = (self.train_data[ (last_week_num+1) * 5 ]- self.train_data[last_week_num * 5])/ self.train_data[last_week_num * 5]   
+        profit =  transcation_amount *  delta
+        return profit
 
 
     def build_network(self):
         # Create placeholders
         with tf.name_scope('inputs'):
             self.X = tf.placeholder(tf.float32, shape=(self.look_back_num*5, None), name="X")
-            self.Y = tf.placeholder(tf.float32, shape=(self.n_y, None), name="Y")
+            self.Y = tf.placeholder(tf.float32, shape=(self.action_number, None), name="Y")
+            self.Profit = tf.placeholder(tf.float32, [None, ], name="profit_value")
             
 
         # Initialize parameters
         units_layer_1 = 10
         units_layer_2 = 10
-        units_output_layer = self.n_y
+        units_output_layer = self.action_number
         with tf.name_scope('parameters'):
             W1 = tf.get_variable("W1", [units_layer_1, self.n_x], initializer = tf.contrib.layers.xavier_initializer(seed=1))
             b1 = tf.get_variable("b1", [units_layer_1, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
             W2 = tf.get_variable("W2", [units_layer_2, units_layer_1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
             b2 = tf.get_variable("b2", [units_layer_2, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
-            W3 = tf.get_variable("W3", [self.n_y, units_layer_2], initializer = tf.contrib.layers.xavier_initializer(seed=1))
-            b3 = tf.get_variable("b3", [self.n_y, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
+            W3 = tf.get_variable("W3", [self.action_number, units_layer_2], initializer = tf.contrib.layers.xavier_initializer(seed=1))
+            b3 = tf.get_variable("b3", [self.action_number, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
 
         # Forward prop
         with tf.name_scope('layer_1'):
