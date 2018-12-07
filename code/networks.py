@@ -9,8 +9,7 @@ class StockAgent:
     def __init__(
         self,       
         input_data,
-        action_number=5,
-        labels,
+        action_number=5,        
         learning_rate=0.01,
         test_week_num=10,
         look_back_num=3                    
@@ -41,6 +40,17 @@ class StockAgent:
 
         self.sess = tf.Session()
 
+
+        ####### state/reward in the game in the game##############
+
+
+
+        self.state=[]
+
+        self.reward=[]
+
+        self.actions=[]
+
         
 
       
@@ -49,9 +59,39 @@ class StockAgent:
         self.sess.run(tf.global_variables_initializer())
 
 
-    def generate_labels_as_onehot(self,label_n2_p2):
-        N=np.eye(5)
-        return N[label_n_2_p2+2,:]
+    def state_transition(old_state, action):
+
+        ################TODO_CAITLIN###############
+
+
+        ####smartsmartcode####
+
+        return new_state
+
+
+    def reward_function(state,action):
+###############################TODO_CAITLIN###############
+
+################DATA IS IN Self.data ###############
+        return profit
+
+
+
+
+    def store_s_r_a():
+
+        ################TODO_JUPITER###############
+
+        
+
+        self.state.append()
+        self.reward.append()
+        self.actions.append()
+
+
+
+
+
 
 
         
@@ -63,14 +103,15 @@ class StockAgent:
      
 
     def choose_action(self, input_data):
+        ################TODO_JUPITER###############
      
 
-        # Run forward propagation to get softmax probabilities
-        prob_weights = self.sess.run(self.outputs_softmax, feed_dict = {self.X: input_data})
+        # # Run forward propagation to get softmax probabilities
+        # prob_weights = self.sess.run(self.outputs_softmax, feed_dict = {self.X: input_data})
 
-        # Select action using a biased sample
-        # this will return the index of the action we've sampled
-        action = np.random.choice(range(len(prob_weights.ravel())), p=prob_weights.ravel())
+        # # Select action using a biased sample
+        # # this will return the index of the action we've sampled
+        # action = np.random.choice(range(len(prob_weights.ravel())), p=prob_weights.ravel())
         return action
 
     def learn(self, num_epochs):
@@ -108,14 +149,7 @@ class StockAgent:
         
 
         
-    def profit(self,last_week_num):
-        past_three_week = self.train_data[(last_week_num-self.lbn) * 5 : last_week_num * 5 ]
-        action = self.choose_action(input_data=past_three_week)
-        weight=np.array([-100,-10,0,10,100])
-        transcation_amount=action.dot(weight)  
-        delta = (self.train_data[ (last_week_num+1) * 5 ]- self.train_data[last_week_num * 5])/ self.train_data[last_week_num * 5]   
-        profit =  transcation_amount *  delta
-        return profit
+
 
 
     def build_network(self):
