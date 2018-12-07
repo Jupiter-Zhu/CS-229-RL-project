@@ -16,6 +16,7 @@ class StockAgentDQN:
         epsilon=0.05,
         hard=100,
         soft=10,
+        buy_action_weight=1,
         gamma= 0.9                   
     ):
 
@@ -39,6 +40,9 @@ class StockAgentDQN:
         self.hard = hard
 
         self.soft = soft
+
+
+        self.baw=buy_action_weight
         
         
 
@@ -135,11 +139,11 @@ class StockAgentDQN:
             new_state[5] += self.soft
             new_state[6] -= self.soft
         elif action == 1:
-            new_state[5] -= self.soft
-            new_state[6] += self.soft
+            new_state[5] -= self.soft * self.baw
+            new_state[6] += self.soft * self.baw
         elif action == 2:
-            new_state[5] -= self.hard
-            new_state[6] += self.hard
+            new_state[5] -= self.hard * self.baw
+            new_state[6] += self.hard * self.baw
 
         # adusting stock valuation based on following week's price, using delta3 for the following week
         if train:
