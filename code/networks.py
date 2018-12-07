@@ -5,50 +5,64 @@ import time
 
 
 
-class StockAgent:
+class StockAgentDQN:
     def __init__(
         self,       
         input_data,
-        action_number=5,        
+        action_number=5, 
+        state_num=7,       
         learning_rate=0.01,
         test_week_num=10,
-        look_back_num=3                    
+        epsilon=0.05,
+        gamma= 0.9                   
     ):
 
         
         self.lr = learning_rate 
-        self.lbn = look_back_num
-        self.action_number=action_number
 
-        self.train_data=input_data[0:-test_week_num*5]
+        self.n_y = action_number
 
-        self.test_data=input_data[-test_week_num*5:]
+        self.train_data = input_data[0:-test_week_num,:]
 
-        self.train_label=labels[0:-test_week_num*5]
+        self.num_train_weeks = self.train_data.shape[0] - 1
+ 
+        self.test_data=input_data[-test_week_num:]   
 
-        self.test_label=labels[-test_week_num*5:]
+        self.epsilon=epsilon
 
-        self.num_examples_weeks=len(train_data)//5
+        self.gamma=gamma 
+
+        self.n_x=state_num
 
         self.hard = 100
 
-        self.weak = 10
+        self.soft = 10
         
         
 
         
 
-        self.build_network()
-
-        self.cost_history = []
+        # Config for networks
+        n_l1 = 10
+        n_l2 = 10
+        W_init = tf.contrib.layers.xavier_initializer(seed=1)
+        b_init = tf.contrib.layers.xavier_initializer(seed=1)
+        self.build_network(n_l1, n_l2, W_init, b_init)
+        
 
         self.sess = tf.Session()
 
+        self.cost_history = []
 
-        ####### state/reward in the game in the game##############
 
-        # keeps track of current state
-        self.state=[]
+        ####### q value in the game  ##############
+
+        self.Q_target_list=[]
+
+        self.Q_list=[]
+
+        # # keeps track of current state
+        #self.state=[]
 
         # stores list of states
         self.state_list=[]
@@ -65,7 +79,7 @@ class StockAgent:
         self.sess.run(tf.global_variables_initializer())
 
 
-    def get_first_state(train=True):
+    def get_first_state(self,train=True):
 
         # initialize state
         # assuming that state is a 7-vector of the form:
@@ -81,11 +95,11 @@ class StockAgent:
         self.state[5] = 0
         self.state[6] = 0
 
-        # initializing state_list:
-        self.state_list = np.append(self.state_list, self.state)
+
+        
 
 
-    def state_transition(old_state, action, week, train=True):
+    def state_transition(self,old_state, action, week, train=True):
 
         ################TODO_CAITLIN###############
 
@@ -132,7 +146,7 @@ class StockAgent:
         return new_state
 
 
-    def reward_function(state, action, week, train=True):
+    def reward_function(self,state, action, week, train=True):
 ###############################TODO_CAITLIN###############
 
         # assuming that state is a 7-vector of the form:
@@ -140,7 +154,7 @@ class StockAgent:
 
         previous_value = state[5] + state[6]
 
-        new_state = state_transition(state, action, week)
+        new_state = self.state_transition(state, action, week)
 
         new_value = new_state[5] + new_state[6]
 
@@ -152,126 +166,168 @@ class StockAgent:
 
 
 
-    def store_s_r_a():
+    def store_state_actions_reward(self,s,a,r):
 
         ################TODO_JUPITER###############
 
+
+        self.state_list.append(s)
+        self.action_list.append(a)
+        self.reward_list.append(r)   
         
-
-        self.state.append()
-        self.reward.append()
-        self.actions.append()
-
-
-
-
-
-
-
-        
-
-        
-
-        
-
-     
-
-    def choose_action(self, input_data):
-        ################TODO_JUPITER###############
-     
-
-        # # Run forward propagation to get softmax probabilities
-        # prob_weights = self.sess.run(self.outputs_softmax, feed_dict = {self.X: input_data})
-
-        # # Select action using a biased sample
-        # # this will return the index of the action we've sampled
-        # action = np.random.choice(range(len(prob_weights.ravel())), p=prob_weights.ravel())
-        return action
-
-    def learn(self, num_epochs):
-        # # Discount and normalize episode reward
-        # discounted_episode_rewards_norm = self.discount_and_norm_rewards()
-
-        # # Train on episode
-        # self.sess.run(self.train_op,  feed_dict={
-        #      self.X: np.vstack(self.episode_observations).T,
-        #      self.Y: np.vstack(np.array(self.episode_actions)).T,
-        #      self.discounted_episode_rewards_norm: discounted_episode_rewards_norm,
-        # })
-
-        # # silly way of implementing tensorboard.. very slow
-        # #loss_summary = self.sess.run(self.loss_summary,  feed_dict={
-        # #     self.X: np.vstack(self.episode_observations).T,
-        # #     self.Y: np.vstack(np.array(self.episode_actions)).T,
-        # #     self.discounted_episode_rewards_norm: discounted_episode_rewards_norm,
-        # #})
-
-        # #tf.summary.FileWriter("logs/").add_summary(loss_summary)
-        for epoch in range(num_epochs):
-            for last_week_num in range(self.lbn, self.num_examples_weeks):
-                past_three_week = self.train_data[(last_week_num-self.lbn) * 5 : last_week_num * 5 ]
-                label_one_hot = self.generate_labels_as_onehot(self.train_label[last_week_num + 1])
-                profit = self.profit(last_week_num)
-
-            # Train on episode
-                self.sess.run(self.train_op,  feed_dict={
-                    self.X: past_three_week,
-                    self.Y: label_one_hot,
-                    self.Profit: profit,
-                })
-
-        
-
         
 
 
 
-    def build_network(self):
-        # Create placeholders
-        with tf.name_scope('inputs'):
-            self.X = tf.placeholder(tf.float32, shape=(self.look_back_num*5, None), name="X")
-            self.Y = tf.placeholder(tf.float32, shape=(self.action_number, None), name="Y")
-            self.Profit = tf.placeholder(tf.float32, [None, ], name="profit_value")
+
+    def generate_target_q_list(self):       
+
+        for week in range(self.num_train_weeks):
+            current_state = self.state_list[week]
+
+            current_action = self.action_list[week]
+
+            current_reward = self.reward_list[week]
+
+       
+            state_prime = self.state_transition(old_state=current_state, action=current_action, week=week, train=True)
+
+            state_prime_reshape=state_prime.reshape(7,1)
+        
+            max_Q_state_prime_a = np.max(self.sess.run(self.q_eval_outputs, feed_dict={self.X: state_prime_reshape}))
+
+            self.Q_target_list.append( current_reward + self.gamma * max_Q_state_prime_a )
+
+         
+
+
+
+    def forward_propogate(self,state,week,train=True):
+
+        state_reshape=state.reshape(7,1)
+
+        if train:     
+
+        # If random sample from uniform distribution is less than the epsilon parameter then predict action, else take a random action
+            if np.random.uniform() > self.epsilon:
+            # Forward propagate to get q values of outputs
+
+
+
+                actions_q_values = self.sess.run(self.q_eval_outputs, feed_dict={self.X: state_reshape})
+
+                q_value=np.max(actions_q_values)
+
             
+                action = np.argmax(actions_q_values)-2
 
-        # Initialize parameters
-        units_layer_1 = 10
-        units_layer_2 = 10
-        units_output_layer = self.action_number
-        with tf.name_scope('parameters'):
-            W1 = tf.get_variable("W1", [units_layer_1, self.n_x], initializer = tf.contrib.layers.xavier_initializer(seed=1))
-            b1 = tf.get_variable("b1", [units_layer_1, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
-            W2 = tf.get_variable("W2", [units_layer_2, units_layer_1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
-            b2 = tf.get_variable("b2", [units_layer_2, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
-            W3 = tf.get_variable("W3", [self.action_number, units_layer_2], initializer = tf.contrib.layers.xavier_initializer(seed=1))
-            b3 = tf.get_variable("b3", [self.action_number, 1], initializer = tf.contrib.layers.xavier_initializer(seed=1))
+                reward=self.reward_function(state, action, week, train=True)
 
-        # Forward prop
-        with tf.name_scope('layer_1'):
-            Z1 = tf.add(tf.matmul(W1,self.X), b1)
-            A1 = tf.nn.relu(Z1)
-        with tf.name_scope('layer_2'):
-            Z2 = tf.add(tf.matmul(W2, A1), b2)
-            A2 = tf.nn.relu(Z2)
-        with tf.name_scope('layer_3'):
-            Z3 = tf.add(tf.matmul(W3, A2), b3)
-            A3 = tf.nn.softmax(Z3)
 
-        # Softmax outputs, we need to transpose as tensorflow nn functions expects them in this shape
-        logits = tf.transpose(Z3)
-        labels = tf.transpose(self.Y)
-        self.outputs_softmax = tf.nn.softmax(logits, name='A3')
+                self.store_state_actions_reward( s=state,a=action,r=reward )
 
-        with tf.name_scope('loss'):
-            neg_log_prob = tf.nn.softmax_cross_entropy_with_logits_v2(logits=logits, labels=labels)
-            loss = tf.reduce_mean(neg_log_prob * self.discounted_episode_rewards_norm)  # reward guided loss
+                return action
+
+                
+
+
+            else:
+            # Random action
+                action = np.random.randint(0, 5)-2
+
+                reward=self.reward_function(state, action, week, train=True)
+
+
+                self.store_state_actions_reward( s=state, a=action, r=reward )
+
+                return action
+
+        else:
+            actions_q_values = self.sess.run(self.q_eval_outputs, feed_dict={self.X: state_reshape})
+            action = np.argmax(actions_q_values)-2
+            return action
+
+
+
+    def learn(self):
+
+        #reset lists
+
+        self.state_list=[]
+
         
-        #self.loss_summary=tf.summary.scalar('loss', loss)
+        self.reward_list=[]
+
         
+        self.action_list=[]
+
+        self.Q_target_list=[]
+
+        self.get_first_state(train=True)
+
+        for week in range(self.num_train_weeks):
+
+            current_action = self.forward_propogate(self.state, week, train=True)
+
+            self.state = self.state_transition(old_state=self.state,week=week,action=current_action,train=True)
+
+
+
+
+
+
+        # Generate Q target values with Bellman equation
+        self.generate_target_q_list()
+
+        q_target_outputs=np.array(self.Q_target_list)
+
+        batch_state=np.array(self.state_list).T
+
+        # Train eval network
+        _, self.cost = self.sess.run([self.train_op, self.loss], feed_dict={ self.X: batch_state, self.Y: q_target_outputs } )
+
+        # Save cost
+        self.cost_history.append(self.cost)
         
 
-        with tf.name_scope('train'):
-            self.train_op = tf.train.AdamOptimizer(self.lr).minimize(loss)
+    def build_network(self, n_l1, n_l2, W_init, b_init):
+        ###########
+        # EVAL NET
+        ###########
+        self.X = tf.placeholder(tf.float32, [self.n_x, None], name='s')
+        self.Y = tf.placeholder(tf.float32, [ None ], name='Q_target')
+
+        with tf.variable_scope('eval_net'):
+            # Store variables in collection
+            c_names = ['eval_net_params', tf.GraphKeys.GLOBAL_VARIABLES]
+
+            with tf.variable_scope('parameters'):
+                W1 = tf.get_variable('W1', [n_l1, self.n_x], initializer=W_init, collections=c_names)
+                b1 = tf.get_variable('b1', [n_l1, 1], initializer=b_init, collections=c_names)
+                W2 = tf.get_variable('W2', [n_l2, n_l1], initializer=W_init, collections=c_names)
+                b2 = tf.get_variable('b2', [n_l2, 1], initializer=b_init, collections=c_names)
+                W3 = tf.get_variable('W3', [self.n_y, n_l2], initializer=W_init, collections=c_names)
+                b3 = tf.get_variable('b3', [self.n_y, 1], initializer=b_init, collections=c_names)
+
+            # First layer
+            with tf.variable_scope('layer_1'):
+                Z1 = tf.matmul(W1, self.X) + b1
+                A1 = tf.nn.relu( Z1 )
+            # Second layer
+            with tf.variable_scope('layer_2'):
+                Z2 = tf.matmul(W2, A1) + b2
+                A2 = tf.nn.relu( Z2 )
+            # Output layer
+            with tf.variable_scope('layer_3'):
+                Z3 = tf.matmul(W3, A2) + b3
+                self.q_eval_outputs = Z3
+
+        with tf.variable_scope('loss'):
+            self.loss = tf.reduce_mean(tf.squared_difference(self.Y, tf.reduce_max(self.q_eval_outputs, axis=0) ) )
+        with tf.variable_scope('train'):
+            self.train_op = tf.train.AdamOptimizer(self.lr).minimize(self.loss)
+
+
 
     def plot_cost(self):
         import matplotlib

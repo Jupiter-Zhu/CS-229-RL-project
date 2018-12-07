@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def load_dataset(csv_path, label_col='Labels'):
+def load_dataset(csv_path):
     """Load dataset from a CSV file.
 
     Args:
@@ -16,20 +16,20 @@ def load_dataset(csv_path, label_col='Labels'):
 
     
     # Load headers
-    with open(csv_path, 'r') as csv_fh:
-        headers = csv_fh.readline().strip().split(',')
-    print(headers)
+    # with open(csv_path, 'r') as csv_fh:
+    #     headers = csv_fh.readline().strip().split(',')
+    # print(headers)
 
     # Load features and labels
-    x_cols = [i for i in range(len(headers)) if headers[i].startswith('Data')]
-    print(x_cols)
-    l_cols = [i for i in range(len(headers)) if headers[i] == label_col]
-    print(l_cols)
-    inputs = np.loadtxt(csv_path, delimiter=',', skiprows=1, usecols=x_cols)
-    labels = np.loadtxt(csv_path, delimiter=',', skiprows=1, usecols=l_cols)
+    # x_cols = [i for i in range(len(headers)) if headers[i].startswith('Data')]
+    # print(x_cols)
+    # l_cols = [i for i in range(len(headers)) if headers[i] == label_col]
+    # print(l_cols)
+    inputs = np.loadtxt(csv_path, delimiter=',', skiprows=1, usecols=(1,2,3,4,5))
+     
 
     
 
     
 
-    return inputs, labels
+    return inputs

@@ -1,8 +1,18 @@
 import numpy as np
 from utils import load_dataset
+from networks import StockAgentDQN
+
+inputs=load_dataset(csv_path='./data/stock_data_apple_q.csv')
+
+SADQN=StockAgentDQN(input_data=inputs)
+
+for epoch in range(100):
+	SADQN.learn()
+	print('final_value=',SADQN.state[5]+SADQN.state[6])
 
 
-inputs, labels=load_dataset(csv_path='./data/stock_data_apple.csv', label_col='Labels')
-print(len(inputs) )
-print(len(labels[labels!=10]))
+
+SADQN.plot_cost()
+
+
 
