@@ -20,7 +20,8 @@ class StockAgentDQN:
         gamma= 0.9                   
     ):
 
-        
+        self.test_week_num = test_week_num
+
         self.lr = learning_rate 
 
         self.n_y = action_number
@@ -132,10 +133,10 @@ class StockAgentDQN:
         # initialize current cash and stocks:
         new_state[5 : 7] = old_state[5 : 7]
 
-        if (action == -2) and (old_state[6] >= self.hard):
+        if action == -2:
             new_state[5] += self.hard
             new_state[6] -= self.hard
-        elif ((action == -2) and (old_state[6] >= self.soft)) or ((action == -1) and (old_state[6] >= self.soft)):
+        elif action == -1:
             new_state[5] += self.soft
             new_state[6] -= self.soft
         elif action == 1:
@@ -147,9 +148,9 @@ class StockAgentDQN:
 
         # adusting stock valuation based on following week's price, using delta3 for the following week
         if train:
-            new_state[6] *= self.train_data[week + 1, 3]
+            new_state[6] *= (1 + self.train_data[week + 1, 3])
         else:
-            new_state[6] *= self.test_data[week + 1, 3]
+            new_state[6] *= (1 + self.test_data[week + 1, 3])
 
 
         ####smartsmartcode####
