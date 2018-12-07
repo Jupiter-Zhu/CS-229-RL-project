@@ -29,6 +29,10 @@ class StockAgent:
         self.test_label=labels[-test_week_num*5:]
 
         self.num_examples_weeks=len(train_data)//5
+
+        self.hard = 100
+
+        self.weak = 10
         
         
 
@@ -43,25 +47,84 @@ class StockAgent:
 
         ####### state/reward in the game in the game##############
 
-
-
+        # keeps track of current state
         self.state=[]
 
-        self.reward=[]
+        # stores list of states
+        self.state_list=[]
 
-        self.actions=[]
+        # stores list of rewards
+        self.reward_list=[]
+
+        # stores list of actions
+        self.action_list=[]
 
         
-
-      
         
 
         self.sess.run(tf.global_variables_initializer())
 
 
-    def state_transition(old_state, action):
+    def get_first_state(train=True):
+
+        # initialize state
+        # assuming that state is a 7-vector of the form:
+        # (volatility, delta1, delta2, delta3, current price, current cash, current amount ($) of stock owned)
+
+        self.state = np.zeros(7)
+
+        if train:
+            self.state[0 : 5] = self.train_data[0, 0 : 5]
+        else:
+            self.state[0 : 5] = self.test_data[0, 0: 5]
+
+        self.state[5] = 0
+        self.state[6] = 0
+
+        # initializing state_list:
+        self.state_list = np.append(self.state_list, self.state)
+
+
+    def state_transition(old_state, action, week, train=True):
 
         ################TODO_CAITLIN###############
+
+        # assuming that state is a 7-vector of the form:
+        # (volatility, delta1, delta2, delta3, current price, current cash, current amount ($) of stock owned)
+
+        # assuming our action are: -2 = hard sell, -1 = soft sell, 0 = no action, 1 = soft buy, 2 = hard buy
+
+        # initializing new state
+        new_state = np.zeros(len(old_state))
+
+        # updating volatility, deltas, and current price to next week's values
+
+        if train:
+            new_state[ 0 : 5] = self.train_data[week + 1, 0 : 5]
+        else:
+            new_state[ 0 : 5] = self.test_data[week + 1, 0 : 5]
+
+        # initialize current cash and stocks:
+        new_state[5 : 7] = old_state[5 : 7]
+
+        if (action == -2) and (old_state[6] >= self.hard):
+            new_state[5] += self.hard
+            new_state[6] -= self.hard
+        elif ((action == -2) and (old_state[6] >= self.soft)) or ((action == -1) and (old_state[6] >= self.soft)):
+            new_state[5] += self.soft
+            new_state[6] -= self.soft
+        elif action == 1:
+            new_state[5] -= self.soft
+            new_state[6] += self.soft
+        elif action == 2:
+            new_state[5] -= self.hard
+            new_state[6] += self.hard
+
+        # adusting stock valuation based on following week's price, using delta3 for the following week
+        if train:
+            new_state[6] *= self.train_data[week + 1, 3]
+        else:
+            new_state[6] *= self.test_data[week + 1, 3]
 
 
         ####smartsmartcode####
@@ -69,10 +132,21 @@ class StockAgent:
         return new_state
 
 
-    def reward_function(state,action):
+    def reward_function(state, action, week, train=True):
 ###############################TODO_CAITLIN###############
 
-################DATA IS IN Self.data ###############
+        # assuming that state is a 7-vector of the form:
+        # (volatility, delta1, delta2, delta3, current price, current cash, current amount ($) of stock owned)
+
+        previous_value = state[5] + state[6]
+
+        new_state = state_transition(state, action, week)
+
+        new_value = new_state[5] + new_state[6]
+
+        profit = new_value - previous_value
+
+################DATA IS IN self.train_data or self.test_data ###############
         return profit
 
 
