@@ -14,6 +14,8 @@ class StockAgentDQN:
         learning_rate=0.01,
         test_week_num=10,
         epsilon=0.05,
+        hard=100,
+        soft=10,
         gamma= 0.9                   
     ):
 
@@ -34,9 +36,9 @@ class StockAgentDQN:
 
         self.n_x=state_num
 
-        self.hard = 100
+        self.hard = hard
 
-        self.soft = 10
+        self.soft = soft
         
         
 
@@ -72,6 +74,11 @@ class StockAgentDQN:
 
         # stores list of actions
         self.action_list=[]
+
+        # 
+        self.total_reward_history=[]
+
+        self.action_percentage_history=[]
 
         
         
@@ -288,6 +295,17 @@ class StockAgentDQN:
 
         # Save cost
         self.cost_history.append(self.cost)
+
+        self.total_reward_history.append(np.sum(np.array(self.reward_list)))
+
+        action_num=np.zeros(5)
+        counter=0
+
+        for action in [-2,-1,0,1,2]:
+            action_num[counter]=self.action_list.count(action)/len(self.action_list)
+            counter+=1
+
+        self.action_percentage_history.append(action_num)
         
 
     def build_network(self, n_l1, n_l2, W_init, b_init):
@@ -335,6 +353,15 @@ class StockAgentDQN:
         import matplotlib.pyplot as plt
         plt.plot(np.arange(len(self.cost_history)), self.cost_history)
         plt.ylabel('Cost')
+        plt.xlabel('Training Steps')
+        plt.show()
+
+    def plot_reward(self):
+        import matplotlib
+        #matplotlib.use("MacOSX")
+        import matplotlib.pyplot as plt
+        plt.plot(np.arange(len(self.total_reward_history)), self.total_reward_history)
+        plt.ylabel('Reward')
         plt.xlabel('Training Steps')
         plt.show()
 
