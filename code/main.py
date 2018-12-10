@@ -1,8 +1,9 @@
 import numpy as np
 from utils import load_dataset
+from utils import download_stock
 from networks import StockAgentDQN
 
-inputs=load_dataset(csv_path='./data/stock_data_apple_q.csv')
+inputs=load_dataset(csv_path='./data/stock_data_FB.csv')
 
 SADQN=StockAgentDQN(input_data=inputs, epsilon = 0.05, test_week_num = 10, hard = 100, soft = 10, buy_action_weight = 3)
 
@@ -19,8 +20,8 @@ print(np.array(SADQN.state_list)[:, 5:7])
 # cash = 0
 # stock = 0
 # for week in range(inputs.shape[0] - 1):
-# 	cash -= 100
-# 	stock += 100
+# 	cash -= 10
+# 	stock += 10
 # 	stock *= (1 + inputs[week + 1, 3])
 
 # print(cash, stock)

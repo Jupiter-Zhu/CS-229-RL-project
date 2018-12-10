@@ -42,4 +42,5 @@ data = {'Volatility': vol, 'Delta1' : delta1, 'Delta2' : delta2, 'Delta3' : delt
 df = pd.DataFrame(data)
 df.to_csv("./data/stock_data_apple_q.csv")
 
+
    
