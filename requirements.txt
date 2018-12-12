@@ -1,6 +1,7 @@
 gym
 matplotlib
-
+pandas
+pandas-datareader
 Pillow
 tensorflow
 tensorboard
