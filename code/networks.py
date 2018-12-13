@@ -50,11 +50,11 @@ class StockAgentDQN:
         
 
         # Config for networks
-        n_l1 = 10
-        n_l2 = 10
-        W_init = tf.contrib.layers.xavier_initializer(seed=1)
-        b_init = tf.contrib.layers.xavier_initializer(seed=1)
-        self.build_network(n_l1, n_l2, W_init, b_init)
+        # n_l1 = 10
+        # n_l2 = 10
+        # W_init = tf.contrib.layers.xavier_initializer(seed=1)
+        # b_init = tf.contrib.layers.xavier_initializer(seed=1)
+        # self.build_network(n_l1, n_l2, W_init, b_init)
         
 
         self.sess = tf.Session()
@@ -329,6 +329,7 @@ class StockAgentDQN:
 
             with tf.variable_scope('parameters'):
                 W1 = tf.get_variable('W1', [n_l1, self.n_x], initializer=W_init, collections=c_names)
+                 
                 b1 = tf.get_variable('b1', [n_l1, 1], initializer=b_init, collections=c_names)
                 W2 = tf.get_variable('W2', [n_l2, n_l1], initializer=W_init, collections=c_names)
                 b2 = tf.get_variable('b2', [n_l2, 1], initializer=b_init, collections=c_names)
