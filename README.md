@@ -1,4 +1,4 @@
-# CS 229 project
+# StockAgent: Application of RL from LunarLander to stock price prediction
 
 ## Introduction
 
