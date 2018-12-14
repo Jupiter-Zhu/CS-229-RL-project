@@ -1,7 +1,7 @@
 import numpy as np
 from utils import load_dataset
 from utils import download_stock
-from networks import StockAgentDQN,StockAgentDQNshort
+from networks import StockAgentDQN,StockAgentDQNshort,StockAgentDQNbold
 
 # inputs=load_dataset(csv_path='./data/stock_data_FB.csv')
 
@@ -34,6 +34,7 @@ for epoch in range(3000):
 
 SADQNshort.test_model()
 SADQNshort.plot_cost()
+SADQNshort.plot_reward()
 		
 
  

@@ -844,7 +844,9 @@ class StockAgentDQNbold:
         hard=100,
         soft=10,
         buy_action_weight=1,
-        gamma= 0.9                   
+        gamma= 0.9,
+        volatility_weight=1,
+        exploration_hard_chance=0.2                   
     ):
 
         self.test_week_num = test_week_num
@@ -868,6 +870,10 @@ class StockAgentDQNbold:
         self.hard = hard
 
         self.soft = soft
+
+        self.volatility_weight=volatility_weight
+
+        self.exploration_hard_chance=exploration_hard_chance
 
 
         self.baw=buy_action_weight
@@ -1000,7 +1006,7 @@ class StockAgentDQNbold:
         profit = new_value - previous_value
 
  
-        return profit * state[0]
+        return profit * (1 +  self.volatility_weight* state[0])
 
 
 
@@ -1072,7 +1078,18 @@ class StockAgentDQNbold:
 
             else:
             # Random action
-                action = np.random.randint(0, 5)-2
+                other_prob= (1-2 * self.exploration_hard_chance )/3
+
+                action_distribution=np.array([self.exploration_hard_chance, other_prob,other_prob,other_prob ,self.exploration_hard_chance])
+
+                possible_actions=np.array([-2,-1,0,1,2])
+
+
+                
+                action=np.random.choice(possible_actions,p=action_distribution)
+
+
+                
 
                 reward=self.reward_function(state, action, week, train=True)
 
