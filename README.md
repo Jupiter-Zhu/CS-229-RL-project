@@ -29,7 +29,7 @@ By drawing connections between the game of Lunar Lander and stock investment, we
 
 ##More details
 
-Please refer to our poster and report in the course_related folder.
+Please refer to our poster and report in the course-related folder inside of the code folder.
 
 ## LunarLander Model
 
