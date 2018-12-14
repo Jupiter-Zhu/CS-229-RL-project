@@ -2,13 +2,36 @@
 
 ## Introduction
 
-This is a joint-work by Caitlin Stanton (stanton1 'at' stanford.edu) and Beite Zhu (jupiterz 'at' stanford.edu) for the CS229 2018 Fall final project. In the current status, we are exploring options in reinforcement learning, in particular the agents for Lunar Lander from OpenAi Gym. Details for the setup are presented later in the README
+This is a joint-work by Caitlin Stanton (stanton1 'at' stanford.edu) and Beite Zhu (jupiterz 'at' stanford.edu) for the CS229 2018 Fall final project. This work implements a neural network to run the deep Q learning algorithm on the Lunar Lander arcade game and then adapts this model to instead run on stock data.  Our agent learns---on stock data from tech companies such as Google, Apple, and Facebook---when it should buy or sell a stock, given features related to the recent stock price history.  Furthermore, our model allows the agent to opt to buy and sell smaller amounts of the stock instead of larger amounts, which increases the nuance and complexity of our model's decision-making.
 
 ## Motivation
 
-Our initial goal is to understand common techniques used in reinforcement learning.  In particular, we first sought to understand the methods and code used in [a link](https://medium.com/@gabogarza/deep-reinforcement-learning-policy-gradients-8f6df70404e6?fbclid=IwAR1mO7reVWv9ldNfBCWyTqHGZjvtMIGtGjfi1oV8sRrSpfSi5lCZHePZ1Ts}{medium.com/@gabogarza/deep-reinforcement-learning-policy-gradients), which enacts a policy gradient method to train an agent to play the LunarLander arcade game.  We then hope to practice applying other techniques tobetter learn Lunar Lander (such as deep Q learning).  Finally, we hope to ap-ply these techniques that work to learn arcade games to other, less conventialapplications, such as predicting the stock market.
+Reinforcement learning has been at the core of many of the most exciting recent developments in AI.  For example, while computers have been relatively successful at playing chess for many years--notably, the computer Deep Blue was able to defeat the reigning world chess champion Garry Kasparov in 1996--the game of Go was considered much harder; it wasn't until reinforcement learning techniques were used in 2015 that the program AlphaGo was finally able to beat a professional human Go player. 
 
-## Current Model
+Here we use deep Q learning to train an agent to learn the arcade game Lunar Lander, a game where the goal is to steer a landing module and successfully land it on the surface of the moon.  After understanding how to apply this model to Lunar Lander, we then use this same technique to a less conventional application of reinforcement learning techniques: investing in the stock market.  We rephrase stock market investment as a game where states involve data such as recent change and volatility of a stock, and discretize the possible investment amounts in order to create a finite set of actions at each state.  In this way, we apply our deep Q learning algorithm from our Lunar Lander model to the problem of stock market prediction.
+
+## StockAgent Model
+
+Our stock prediction agent deploys the following structure:
+
+![Alt text](image/model_graph.PNG?raw=true "layers SADQN")
+
+with less than 100 epochs of training, on the stock of AAPL and GOOG we have the following results:
+
+![Alt text](image/merged_baseline.png?raw=true "SADQN result")
+
+Our model can return 500-2000 dollars of profit in the course of 5 years on a strong stock. The majority of its actions consist of soft buys, and the agent will go into negative cash budget, but with a sizable stock value thus resulting in a positive portfolio.
+
+
+## Conclusion
+
+By drawing connections between the game of Lunar Lander and stock investment, we have established a baseline structure of a stock predicting agent using the model of deep Q learning. The model is demonstrated to be rather risk averse but can master long term investment strategy with reasonably volatile stocks. 
+
+##More details
+
+Please refer to our poster and report in the course_related folder.
+
+## LunarLander Model
 
 We have a base line policy gradient model that has the following structure:
 
@@ -18,13 +41,6 @@ Here's its result from episode 200, 500 and 1000.
 
 ![Alt text](image/episode-200.gif?raw=true "episode 200") 
 ![Alt text](image/episode-500.gif?raw=true "episode 500") 
-![Alt text](image/episode-1000.gif?raw=true "episode 1000")
 
-As one can see the model performs reasonably well after episode 500. But for some reason it learns to only fly off the frame after episode 1000. Currently we are tring to implement different fixes to solve such problems. One option would be starting the lander at randomized positions. Another option we have exploered is using deep Q-learning network with experience replay. For some reason the agent under our deep Q-learning frame work is learning the game very slowly. We are planned to do more research on debugging on this model. More details could be seen in the code and our milestone report.
 
-## Installation
 
-1. Create a conda enviroment.
-2. Install the requirements.txt
-3. Git clone open ai gym.
-4. Cd to the gym folder and install box2d enviroments.
